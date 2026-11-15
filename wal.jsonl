@@ -1,0 +1,13 @@
+{"seq": 1, "op": "begin", "tx": 1}
+{"seq": 2, "op": "insert", "tx": 1, "table": "users", "data": {"id": 1, "name": "张三", "city": "长春"}}
+{"seq": 3, "op": "insert", "tx": 1, "table": "users", "data": {"id": 2, "name": "李四", "city": "吉林"}}
+{"seq": 4, "op": "insert", "tx": 1, "table": "users", "data": {"id": 3, "name": "王五", "city": "四平"}}
+{"seq": 5, "op": "commit", "tx": 1}
+{"seq": 2, "op": "insert", "tx": 1, "table": "users", "data": {"id": 1, "name": "张三", "city": "长春"}}
+{"seq": 7, "op": "insert", "tx": 2, "table": "users", "data": {"id": 4, "name": "赵六", "city": "长春"}}
+{"seq": 9, "op": "update", "tx": 2, "table": "users", "key": {"id": 1}, "data": {"city": "沈阳"}}
+{"seq": 8, "op": "delete", "tx": 2, "table": "users", "key": {"id": 2}}
+{"seq": 10, "op": "insert", "tx": 3, "table": "users", "data": {"id": 5, "name": "孙七", "city": "北京", "vip": 1}}
+{"seq": 11, "op": "begin", "tx": 4}
+{"seq": 12, "op": "insert", "tx": 4, "table": "users", "data": {"id": 6, "name": "周八", "city": "通化"}}
+{"seq": 13, "op": "commit", "tx": 4}
