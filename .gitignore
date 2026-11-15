@@ -4,5 +4,7 @@ __pycache__/
 submission/
 target.db
 target_test.db
+out.db
+cdc_out.db
 out.dot
 .env
