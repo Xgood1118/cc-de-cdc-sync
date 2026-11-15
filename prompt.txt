@@ -1,0 +1,35 @@
+在现有 cdc 骨架上，把它做成一个可靠的变更日志同步器。保留 read_wal、apply_event、apply_all 的签名，只用 Python 标准库，不得引入第三方依赖，不得修改 wal.jsonl 与 schema.sql。
+
+## 需要完成
+
+1. **事件排序与去重**
+   - wal.jsonl 里 seq 不保证单调：第 6 行重复了 seq=2，第 9 行的 seq=9 排在第 8 行前面。要按 seq 升序重排，重复 seq 只应用一次。
+   - 同一 seq 内容不一致时要报冲突，不能随便取一条。
+
+2. **全部变更类型**
+   - 支持 insert、update（按 key 定位）、delete（按 key 定位）、upsert。
+   - update 只改 data 里给出的列，未给出的列保持不变。
+   - delete 不存在的行要记为 skipped，不报错。
+
+3. **事务原子性**
+   - begin/commit 之间的所有事件必须在一个事务里原子应用，中间任何一条失败要整段回滚，且不能留下半截数据。
+   - 有 begin 无 commit 的事务（第 3 个事务就是这种）要识别为不完整事务，整体跳过并计入统计，不能直接应用。
+   - 没有 begin 的孤立事件按单条事务处理。
+
+4. **幂等重放**
+   - 已应用过的 seq 要落库记录，整批重放时跳过，结果必须与只跑一次完全一致。
+   - 重复 replay 后行数与内容不得变化。
+
+5. **表结构与未知列**
+   - 第 10 条事件带 schema.sql 里没有的 vip 列。要按明确策略处理：要么自动扩展目标表结构并记录变更，要么拒收该事件并给出可定位的错误。任何一种都不允许静默丢列。
+   - 表不存在要报错，不能靠 INSERT 失败掩盖。
+
+6. **统计与退出码**
+   - 输出 applied、skipped、replayed、incomplete_tx、conflict 五项计数。
+   - 退出码：全部成功 0，存在冲突或拒收事件 1，输入或 schema 错误 2。
+
+7. **测试**
+   - 覆盖乱序、重复 seq 去重、update/delete、完整事务原子性、不完整事务跳过、重放幂等、未知列处理。
+   - `python -m pytest tests -q` 全部通过。
+
+完成后跑一遍 `python -m cdc.cli wal.jsonl --db out.db`，确认 users 表最终是 5 行（id 1 改到沈阳、id 2 删除、id 3 四平、id 4 长春、id 5 北京、id 6 通化），把统计输出贴进 README。
