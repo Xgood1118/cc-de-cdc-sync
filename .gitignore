@@ -5,3 +5,4 @@ submission/
 target.db
 target_test.db
 out.dot
+.env
